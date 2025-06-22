@@ -126,6 +126,8 @@ private:
   QAction *actionCopyMetadata{new QAction(this)};
   QAction *actionEditMetadata{new QAction(this)};
   QAction *actionClearMetadata{new QAction(this)};
+  QAction *actionEnablePlugin{new QAction(this)};
+  QAction *actionDisablePlugin{new QAction(this)};
   QAction *actionSettings{new QAction(this)};
   QAction *actionUpdateMasterlists{new QAction(this)};
   QAction *actionBackupData{new QAction(this)};
@@ -258,6 +260,8 @@ private slots:
   void on_actionCopyCardContent_triggered();
   void on_actionCopyMetadata_triggered();
   void on_actionClearMetadata_triggered();
+  void on_actionEnablePlugin_triggered();
+  void on_actionDisablePlugin_triggered();
   void on_actionViewDocs_triggered();
   void on_actionOpenFAQs_triggered();
   void on_actionOpenLOOTDataFolder_triggered();

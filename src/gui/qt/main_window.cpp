@@ -546,6 +546,8 @@ void MainWindow::setupMenuBar() {
   actionEditMetadata->setShortcut(QString("Ctrl+E"));
 
   actionClearMetadata->setObjectName("actionClearMetadata");
+  actionEnablePlugin->setObjectName("actionEnablePlugin");
+  actionDisablePlugin->setObjectName("actionDisablePlugin");
 
   // Create menu bar.
   setMenuBar(menubar);
@@ -584,6 +586,8 @@ void MainWindow::setupMenuBar() {
   menuPlugin->addAction(actionCopyMetadata);
   menuPlugin->addSeparator();
   menuPlugin->addAction(actionClearMetadata);
+  menuPlugin->addAction(actionEnablePlugin);
+  menuPlugin->addAction(actionDisablePlugin);
   menuHelp->addAction(actionViewDocs);
   menuHelp->addAction(actionOpenFAQs);
   menuHelp->addAction(actionJoinDiscordServer);
@@ -762,6 +766,10 @@ void MainWindow::translateUi() {
   actionEditMetadata->setText(translate("&Edit Metadata…"));
   /* translators: This string is an action in the Plugin menu. */
   actionClearMetadata->setText(translate("Clear &User Metadata…"));
+  /* translators: This string is an action in the Plugin menu. */
+  actionEnablePlugin->setText(translate("&Enable Plugin"));
+  /* translators: This string is an action in the Plugin menu. */
+  actionDisablePlugin->setText(translate("&Disable Plugin"));
 
   /* translators: The mnemonic in this string shouldn't conflict with other
      menus or sidebar sections. */
@@ -850,6 +858,8 @@ void MainWindow::enterEditingState() {
   actionClearAllUserMetadata->setDisabled(true);
   actionEditMetadata->setDisabled(true);
   actionClearMetadata->setDisabled(true);
+  actionEnablePlugin->setDisabled(true);
+  actionDisablePlugin->setDisabled(true);
   gameComboBox->setDisabled(true);
   actionUpdateMasterlist->setDisabled(true);
   actionSort->setDisabled(true);
@@ -866,6 +876,8 @@ void MainWindow::exitEditingState() {
   actionClearAllUserMetadata->setEnabled(true);
   actionEditMetadata->setEnabled(true);
   actionClearMetadata->setEnabled(true);
+  actionEnablePlugin->setEnabled(true);
+  actionDisablePlugin->setEnabled(true);
   gameComboBox->setEnabled(true);
   actionUpdateMasterlist->setEnabled(true);
   actionSort->setEnabled(true);
@@ -1950,6 +1962,50 @@ void MainWindow::on_actionClearMetadata_triggered() {
   }
 }
 
+void MainWindow::on_actionEnablePlugin_triggered() {
+  try {
+    auto pluginName = getSelectedPlugin().name;
+    auto items = pluginItemModel->getPluginItems();
+
+    std::vector<std::string> activePlugins;
+    for (auto& item : items) {
+      if (item.name == pluginName) {
+        item.isActive = true;
+      }
+      if (item.isActive) {
+        activePlugins.push_back(item.name);
+      }
+    }
+
+    state.GetCurrentGame().SetLoadOrder(activePlugins);
+    loadGame(false);
+  } catch (const std::exception& e) {
+    handleException(e);
+  }
+}
+
+void MainWindow::on_actionDisablePlugin_triggered() {
+  try {
+    auto pluginName = getSelectedPlugin().name;
+    auto items = pluginItemModel->getPluginItems();
+
+    std::vector<std::string> activePlugins;
+    for (auto& item : items) {
+      if (item.name == pluginName) {
+        item.isActive = false;
+      }
+      if (item.isActive) {
+        activePlugins.push_back(item.name);
+      }
+    }
+
+    state.GetCurrentGame().SetLoadOrder(activePlugins);
+    loadGame(false);
+  } catch (const std::exception& e) {
+    handleException(e);
+  }
+}
+
 void MainWindow::on_actionViewDocs_triggered() {
   try {
     const auto logger = getLogger();
@@ -2233,8 +2289,18 @@ void MainWindow::handleSidebarPluginsSelectionChanged(
 
   if (hasPluginSelected) {
     enablePluginActions();
+    try {
+      auto plugin = getSelectedPlugin();
+      actionEnablePlugin->setEnabled(!plugin.isActive);
+      actionDisablePlugin->setEnabled(plugin.isActive);
+    } catch (...) {
+      actionEnablePlugin->setEnabled(false);
+      actionDisablePlugin->setEnabled(false);
+    }
   } else {
     disablePluginActions();
+    actionEnablePlugin->setEnabled(false);
+    actionDisablePlugin->setEnabled(false);
   }
 }
 
